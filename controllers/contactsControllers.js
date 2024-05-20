@@ -21,12 +21,6 @@ export const getOneContact = async (req, res, next) => {
     const result = await contactsService.getContactById(id);
     if (!result) {
       throw HttpError(404, "Not found");
-      // const error = new Error(`Movie with id=${id} not found`);
-      // error.status = 404;
-      // throw error;
-      // return res.status(404).json({
-      //     message: `Movie with id=${id} not found`
-      // })
     }
 
     res.json(result);
@@ -42,8 +36,6 @@ export const deleteContact = async (req, res, next) => {
     if (!result) {
       throw HttpError(404, "Not found");
     }
-
-    // res.status(204).send()
 
     res.json(result);
   } catch (error) {
