@@ -50,7 +50,6 @@ export const createContact = async (req, res, next) => {
       throw HttpError(400, error.message);
     }
     const result = await contactsService.addContact(req.body);
-
     res.status(201).json(result);
   } catch (error) {
     next(error);
