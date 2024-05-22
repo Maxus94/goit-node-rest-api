@@ -44,16 +44,19 @@ export const deleteContact = async (req, res, next) => {
 };
 
 export const createContact = async (req, res, next) => {
-  try {
-    const { error } = createContactSchema.validate(req.body);
-    if (error) {
-      throw HttpError(400, error.message);
-    }
-    const result = await contactsService.addContact(req.body);
-    res.status(201).json(result);
-  } catch (error) {
-    next(error);
-  }
+  // try {
+  //   const { error } = createContactSchema.validate(req.body);
+  //   if (error) {
+  //     throw HttpError(400, error.message);
+  //   }
+  //   const result = await contactsService.addContact(req.body);
+  //   res.status(201).json(result);
+  // } catch (error) {
+  //   next(error);
+  // }
+
+  const result = await contactsService.addContact(req.body);
+  res.status(201).json(result);
 };
 
 export const updateContact = async (req, res, next) => {
