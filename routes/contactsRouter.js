@@ -1,12 +1,9 @@
 import express from "express";
-import {
-  getAllContacts,
-  getOneContact,
-  deleteContact,
-  createContact,
-  updateContact,
-} from "../controllers/contactsControllers.js";
+
+import contactsControllers from "../controllers/contactsControllers.js";
+
 import HttpError from "../helpers/HttpError.js";
+import isValidId from "../middlewares/isValidId.js";
 
 const isEmptyBody = (req, res, next) => {
   const { length } = Object.keys(req.body);
@@ -18,14 +15,25 @@ const isEmptyBody = (req, res, next) => {
 
 const contactsRouter = express.Router();
 
-contactsRouter.get("/", getAllContacts);
+contactsRouter.get("/", contactsControllers.getAllContacts);
 
-contactsRouter.get("/:id", getOneContact);
+contactsRouter.get("/:id", isValidId, contactsControllers.getOneContact);
 
-contactsRouter.delete("/:id", deleteContact);
+contactsRouter.delete("/:id", isValidId, contactsControllers.deleteContact);
 
-contactsRouter.post("/", isEmptyBody, createContact);
+contactsRouter.post("/", isEmptyBody, contactsControllers.createContact);
 
-contactsRouter.put("/:id", isEmptyBody, updateContact);
+contactsRouter.put(
+  "/:id",
+  isValidId,
+  isEmptyBody,
+  contactsControllers.updateContact
+);
+
+contactsRouter.patch(
+  "/:id/favorite",
+  isEmptyBody,
+  contactsControllers.updateStatus
+);
 
 export default contactsRouter;

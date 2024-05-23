@@ -5,54 +5,28 @@ import Contact from "../models/Contact.js";
 
 const contactsPath = path.resolve("db", "contacts.json");
 
-const updateContacts = (contacts) =>
-  fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
-
 function listContacts() {
   return Contact.find();
 }
 
-async function getContactById(contactId) {
-  try {
-    const contacts = await listContacts();
-    const result = contacts.find((item) => item.id === contactId);
-    return result || null;
-  } catch (error) {
-    return error.message;
-  }
+function getContactById(_id) {
+  return Contact.findById(_id);
 }
 
-async function removeContact(contactId) {
-  try {
-    const contacts = await listContacts();
-    const index = contacts.findIndex((item) => item.id === contactId);
-    if (index === -1) {
-      return null;
-    }
-
-    const [result] = contacts.splice(index, 1);
-    await updateContacts(contacts);
-    return result;
-  } catch (error) {
-    return error.message;
-  }
+function removeContact(_id) {
+  return Contact.findByIdAndDelete(_id);
 }
 
 const addContact = (name, email, phone) =>
   Contact.create({ ...name, ...email, ...phone });
 
-const updateContactById = async (id, data) => {
-  const contacts = await listContacts();
-  const index = contacts.findIndex((item) => item.id === id);
-  if (index === -1) {
-    return null;
-  }
+const updateContactById = (id, data) =>
+  Contact.findByIdAndUpdate(id, data, { new: true });
 
-  contacts[index] = { ...contacts[index], ...data };
-  await updateContacts(contacts);
-
-  return contacts[index];
-};
+// const updateStatusContact = (id, data) => {
+//   console.log(data);
+//   return Contact.findByIdAndUpdate(id, data, { new: true });
+// };
 
 export default {
   listContacts,
@@ -60,4 +34,5 @@ export default {
   removeContact,
   addContact,
   updateContactById,
+  // updateStatusContact,
 };
