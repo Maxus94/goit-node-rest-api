@@ -23,16 +23,10 @@ const addContact = (name, email, phone) =>
 const updateContactById = (id, data) =>
   Contact.findByIdAndUpdate(id, data, { new: true });
 
-// const updateStatusContact = (id, data) => {
-//   console.log(data);
-//   return Contact.findByIdAndUpdate(id, data, { new: true });
-// };
-
 export default {
   listContacts,
   getContactById,
   removeContact,
   addContact,
   updateContactById,
-  // updateStatusContact,
 };
