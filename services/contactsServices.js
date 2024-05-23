@@ -38,7 +38,8 @@ async function removeContact(contactId) {
   }
 }
 
-const addContact = (name, email, phone) => Contact.create(name, email, phone);
+const addContact = (name, email, phone) =>
+  Contact.create({ ...name, ...email, ...phone });
 
 const updateContactById = async (id, data) => {
   const contacts = await listContacts();
