@@ -1,7 +1,7 @@
-import path from "path";
+// import path from "path";
 import Contact from "../models/Contact.js";
 
-const contactsPath = path.resolve("db", "contacts.json");
+// const contactsPath = path.resolve("db", "contacts.json");
 
 function listContacts() {
   return Contact.find();

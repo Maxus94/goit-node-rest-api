@@ -4,14 +4,7 @@ import contactsControllers from "../controllers/contactsControllers.js";
 
 import HttpError from "../helpers/HttpError.js";
 import isValidId from "../middlewares/isValidId.js";
-
-const isEmptyBody = (req, res, next) => {
-  const { length } = Object.keys(req.body);
-  if (length === 0) {
-    return next(HttpError(400, "Body must have at least one key"));
-  }
-  next();
-};
+import { isEmptyBody } from "../middlewares/isEmptyBody.js";
 
 const contactsRouter = express.Router();
 
