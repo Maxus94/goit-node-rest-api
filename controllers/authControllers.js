@@ -1,6 +1,7 @@
 import ctrlWrapper from "../decorators/ctrlWrapper.js";
 import compareHash from "../helpers/compareHash.js";
 import HttpError from "../helpers/HttpError.js";
+import { createToken } from "../helpers/jwt.js";
 import { authSignupSchema } from "../schemas/authSchemas.js";
 
 import * as authServices from "../services/authServices.js";
@@ -47,7 +48,11 @@ const signin = async (req, res, next) => {
     if (!comparePassword) {
       throw HttpError(401, "Email or password is wrong");
     }
-    const token = "rtyi.lkjl.ljlm";
+    const { _id: id } = user;
+
+    const payload = { id };
+
+    const token = createToken(payload);
     res.json({ token });
   } catch (error) {
     next(error);
