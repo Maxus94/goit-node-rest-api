@@ -3,28 +3,28 @@ import Contact from "../models/Contact.js";
 
 // const contactsPath = path.resolve("db", "contacts.json");
 
-function listContacts() {
-  return Contact.find();
+function listContacts(search = {}) {
+  const { filter = {}, fields = "", settings = {} } = search;
+  return Contact.find(filter, fields, settings);
 }
 
-function getContactById(_id) {
-  return Contact.findById(_id);
+function getContact(filter) {
+  return Contact.findOne(filter);
 }
 
-function removeContact(_id) {
-  return Contact.findByIdAndDelete(_id);
+function removeContact(filter) {
+  return Contact.findOneAndDelete(filter);
 }
 
 const addContact = (name, email, phone) =>
   Contact.create({ ...name, ...email, ...phone });
 
-const updateContactById = (id, data) =>
-  Contact.findByIdAndUpdate(id, data, { new: true });
+const updateContact = (filter, data) => Contact.findOneAndUpdate(filter, data);
 
 export default {
   listContacts,
-  getContactById,
+  getContact,
   removeContact,
   addContact,
-  updateContactById,
+  updateContact,
 };
