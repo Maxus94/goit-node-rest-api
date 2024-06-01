@@ -10,9 +10,10 @@ import contactsService from "../services/contactsServices.js";
 const getAllContacts = async (req, res, next) => {
   try {
     const { _id: owner } = req.user;
-    const filter = { owner };
-    const fields = "";
     const { page = 1, limit = 10 } = req.query;
+    const { favorite } = req.query;
+    const filter = favorite ? { owner, favorite } : { owner };
+    const fields = "";
     const skip = (page - 1) * limit;
     const settings = { skip, limit };
     const result = await contactsService.listContacts({

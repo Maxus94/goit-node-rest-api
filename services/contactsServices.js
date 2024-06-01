@@ -1,7 +1,4 @@
-// import path from "path";
 import Contact from "../models/Contact.js";
-
-// const contactsPath = path.resolve("db", "contacts.json");
 
 function listContacts(search = {}) {
   const { filter = {}, fields = "", settings = {} } = search;
@@ -19,7 +16,11 @@ function removeContact(filter) {
 const addContact = (name, email, phone) =>
   Contact.create({ ...name, ...email, ...phone });
 
-const updateContact = (filter, data) => Contact.findOneAndUpdate(filter, data);
+const updateContact = (filter, data) =>
+  Contact.findOneAndUpdate(filter, dat, { new: true });
+
+const updateContactById = (id, data) =>
+  Contact.findByIdAndUpdate(id, data, { new: true });
 
 export default {
   listContacts,
@@ -27,4 +28,5 @@ export default {
   removeContact,
   addContact,
   updateContact,
+  updateContactById,
 };

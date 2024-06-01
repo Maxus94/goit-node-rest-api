@@ -2,15 +2,12 @@ import ctrlWrapper from "../decorators/ctrlWrapper.js";
 import compareHash from "../helpers/compareHash.js";
 import HttpError from "../helpers/HttpError.js";
 import { createToken } from "../helpers/jwt.js";
-import { authSignupSchema } from "../schemas/authSchemas.js";
+import { authSignupSchema, subscribeSchema } from "../schemas/authSchemas.js";
 
 import * as authServices from "../services/authServices.js";
 
 const signup = async (req, res, next) => {
-  console.log(req.body);
-
   const { error } = authSignupSchema.validate(req.body);
-  console.log(error);
   if (error) {
     throw HttpError(400, error.message);
   }
@@ -19,27 +16,30 @@ const signup = async (req, res, next) => {
     const { email } = req.body;
     const user = await authServices.findUser({ email });
     if (user) {
-      throw HttpError(409, "User with this email already exists");
+      throw HttpError(409, "Email in use");
     }
 
     const newUser = await authServices.saveUser(req.body);
-    res.status(201).json({ email: newUser.email });
+    res.status(201).json({
+      user: {
+        email: newUser.email,
+        subscription: newUser.subscription,
+      },
+    });
   } catch (error) {
     next(error);
   }
 };
 
 const signin = async (req, res, next) => {
-  console.log(req.body);
-
   try {
     const { error } = authSignupSchema.validate(req.body);
-    console.log(error);
     if (error) {
       throw HttpError(400, error.message);
     }
 
     const { email, password } = req.body;
+
     const user = await authServices.findUser({ email });
     if (!user) {
       throw HttpError(401, "Email or password is wrong");
@@ -48,28 +48,58 @@ const signin = async (req, res, next) => {
     if (!comparePassword) {
       throw HttpError(401, "Email or password is wrong");
     }
-    const { _id: id } = user;
+    const { _id: id, subscription } = user;
 
     const payload = { id };
 
     const token = createToken(payload);
     await authServices.updateUser({ _id: id }, { token });
 
-    res.json({ token });
+    res.json({
+      token,
+      user: {
+        email,
+        subscription,
+      },
+    });
   } catch (error) {
     next(error);
   }
 };
 
 const getCurrent = (req, res) => {
-  const { name, email } = req.user;
-  res.json({ name, email });
+  const { email, subscription } = req.user;
+  res.json({ email, subscription });
 };
 
 const logout = async (req, res) => {
   const { _id } = req.user;
-  await authServices.updateUser({ _id }, { token: "" });
-  res.json({ message: "Signout success" });
+  try {
+    await authServices.updateUser({ _id }, { token: "" });
+    res.status(204).json({});
+  } catch (error) {
+    next(HttpError(401, "Not authorized"));
+  }
+};
+
+const subscribe = async (req, res, next) => {
+  try {
+    const { error } = subscribeSchema.validate(req.body);
+    if (error) {
+      throw HttpError(400, error.message);
+    }
+
+    const { _id } = req.user;
+    const { subscription } = req.body;
+    const result = await authServices.updateUser({ _id }, { subscription });
+    if (!result) {
+      throw HttpError(404, "Not found");
+    }
+
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
 };
 
 export default {
@@ -77,4 +107,5 @@ export default {
   signin: ctrlWrapper(signin),
   getCurrent: ctrlWrapper(getCurrent),
   logout: ctrlWrapper(logout),
+  subscribe: ctrlWrapper(subscribe),
 };

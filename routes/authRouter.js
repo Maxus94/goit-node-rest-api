@@ -4,7 +4,6 @@ import authControllers from "../controllers/authControllers.js";
 
 import { isEmptyBody } from "../middlewares/isEmptyBody.js";
 
-import { authSignupSchema } from "../schemas/authSchemas.js";
 import authenticate from "../middlewares/authenticate.js";
 
 const authRouter = express.Router();
@@ -15,6 +14,8 @@ authRouter.post("/login", isEmptyBody, authControllers.signin);
 
 authRouter.get("/current", authenticate, authControllers.getCurrent);
 
-authRouter.post("/logout", authenticate, authControllers.logout);
+authRouter.post("/logout", isEmptyBody, authenticate, authControllers.logout);
+
+authRouter.patch("/", isEmptyBody, authenticate, authControllers.subscribe);
 
 export default authRouter;
