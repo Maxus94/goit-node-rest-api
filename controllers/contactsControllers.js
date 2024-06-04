@@ -81,6 +81,11 @@ const updateContact = async (req, res, next) => {
 
     const { id: _id } = req.params;
     const { _id: owner } = req.user;
+
+    const contactToUpdate = await contactsService.getContact({ _id, owner });
+    if (!contactToUpdate) {
+      throw HttpError(404, "Not found");
+    }
     const result = await contactsService.updateContact(
       { _id, owner },
       req.body
@@ -103,8 +108,18 @@ const updateStatus = async (req, res, next) => {
       throw HttpError(400, error.message);
     }
 
-    const { id } = req.params;
-    const result = await contactsService.updateContactById(id, req.body);
+    const { id: _id } = req.params;
+    const { _id: owner } = req.user;
+
+    const contactToUpdate = await contactsService.getContact({ _id, owner });
+    if (!contactToUpdate) {
+      throw HttpError(404, "Not found");
+    }
+
+    const result = await contactsService.updateContact(
+      { _id, owner },
+      req.body
+    );
     if (!result) {
       throw HttpError(404, "Not found");
     }

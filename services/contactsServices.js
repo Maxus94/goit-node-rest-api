@@ -17,7 +17,7 @@ const addContact = (name, email, phone) =>
   Contact.create({ ...name, ...email, ...phone });
 
 const updateContact = (filter, data) =>
-  Contact.findOneAndUpdate(filter, dat, { new: true });
+  Contact.findOneAndUpdate(filter, data, { new: true });
 
 const updateContactById = (id, data) =>
   Contact.findByIdAndUpdate(id, data, { new: true });
