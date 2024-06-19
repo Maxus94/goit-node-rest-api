@@ -1,3 +1,5 @@
+import fs from "fs/promises";
+import gravatar from 'gravatar';
 import ctrlWrapper from "../decorators/ctrlWrapper.js";
 import compareHash from "../helpers/compareHash.js";
 import HttpError from "../helpers/HttpError.js";
@@ -18,7 +20,9 @@ const signup = async (req, res, next) => {
     if (user) {
       throw HttpError(409, "Email in use");
     }
-
+    
+    //returns //www.gravatar.com/avatar/93e9084aa289b7f1f5e4ab6716a56c3b?s=200&r=pg&d=404
+    const avatarURL = gravatar.url(email);
     const newUser = await authServices.saveUser(req.body);
     res.status(201).json({
       user: {
