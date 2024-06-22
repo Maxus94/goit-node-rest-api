@@ -1,5 +1,7 @@
 import fs from "fs/promises";
+import path from 'path';
 import gravatar from 'gravatar';
+import Jimp from "jimp";
 import ctrlWrapper from "../decorators/ctrlWrapper.js";
 import compareHash from "../helpers/compareHash.js";
 import HttpError from "../helpers/HttpError.js";
@@ -7,6 +9,8 @@ import { createToken } from "../helpers/jwt.js";
 import { authSignupSchema, subscribeSchema } from "../schemas/authSchemas.js";
 
 import * as authServices from "../services/authServices.js";
+
+const avatarPath = path.resolve("public", "avatars");
 
 const signup = async (req, res, next) => {
   const { error } = authSignupSchema.validate(req.body);
@@ -20,14 +24,14 @@ const signup = async (req, res, next) => {
     if (user) {
       throw HttpError(409, "Email in use");
     }
-    
-    //returns //www.gravatar.com/avatar/93e9084aa289b7f1f5e4ab6716a56c3b?s=200&r=pg&d=404
+
     const avatarURL = gravatar.url(email);
-    const newUser = await authServices.saveUser(req.body);
+    const newUser = await authServices.saveUser({ ...req.body, ...{} });
     res.status(201).json({
       user: {
         email: newUser.email,
         subscription: newUser.subscription,
+        avatarURL,
       },
     });
   } catch (error) {
@@ -106,10 +110,32 @@ const subscribe = async (req, res, next) => {
   }
 };
 
+const changeAvatar = async (req, res, next) => {
+
+  const { _id, email } = req.user;
+  const { path: oldPath, filename } = req.file;
+  
+  await Jimp.read(oldPath)
+    .then((image) => {
+      image.cover(250, 250);
+      image.write(oldPath)
+    })
+    .catch((err) => {
+      throw err;
+    });
+  const avatarFileName = email.split('@')[0] + '.' + filename.split('.')[1];
+  const newPath = path.join(avatarPath, avatarFileName)
+  await fs.rename(oldPath, newPath);
+  const avatar = path.join("public", "avatars", avatarFileName);
+  const result = await authServices.updateUser({ _id }, { avatarURL: avatar });
+  res.status(200).json({ avatarURL: result.avatarURL });
+};
+
 export default {
   signup: ctrlWrapper(signup),
   signin: ctrlWrapper(signin),
   getCurrent: ctrlWrapper(getCurrent),
   logout: ctrlWrapper(logout),
   subscribe: ctrlWrapper(subscribe),
+  changeAvatar: ctrlWrapper(changeAvatar),
 };
