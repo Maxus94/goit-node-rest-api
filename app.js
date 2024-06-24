@@ -5,12 +5,9 @@ import cors from "cors";
 import contactsRouter from "./routes/contactsRouter.js";
 import authRouter from "./routes/authRouter.js";
 
-// import mongoose from "mongoose";
 import dotenv from "dotenv";
 
 dotenv.config();
-
-// const { DB_HOST, PORT = 3000 } = process.env;
 
 const app = express();
 
