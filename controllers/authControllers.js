@@ -26,7 +26,7 @@ const signup = async (req, res, next) => {
     }
 
     const avatarURL = gravatar.url(email);
-    const newUser = await authServices.saveUser({ ...req.body, avatarURL,  ...{} });
+    const newUser = await authServices.saveUser({ ...req.body, avatarURL, ...{} });
     res.status(201).json({
       user: {
         email: newUser.email,
@@ -112,9 +112,23 @@ const subscribe = async (req, res, next) => {
 
 const changeAvatar = async (req, res, next) => {
 
+  if (!req.user) {
+    throw HttpError(401, "You are not loogged in");
+  }
+
+
   const { _id, email } = req.user;
+
+  if (email !== req.body.email) {
+    throw HttpError(401, `You are not authorized to change avatar for user ${req.body.email}`);
+  }
+
+  if (!req.file) {
+    throw HttpError(400, "You didn't attach avatar file");
+  }
+
   const { path: oldPath, filename } = req.file;
-  
+
   await Jimp.read(oldPath)
     .then((image) => {
       image.cover(250, 250);

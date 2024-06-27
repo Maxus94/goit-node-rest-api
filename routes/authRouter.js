@@ -6,6 +6,7 @@ import { isEmptyBody } from "../middlewares/isEmptyBody.js";
 
 import authenticate from "../middlewares/authenticate.js";
 import upload from "../middlewares/upload.js";
+import isLoggedIn from "../middlewares/isLoggedIn.js";
 
 const authRouter = express.Router();
 
@@ -24,7 +25,7 @@ authRouter.post("/logout", isEmptyBody, authenticate, authControllers.logout);
 
 authRouter.patch("/", isEmptyBody, authenticate, authControllers.subscribe);
 
-authRouter.patch("/avatars", upload.single("avatar"), isEmptyBody, authenticate, authControllers.changeAvatar);
+authRouter.patch("/avatars", upload.single("avatar"), isEmptyBody, isLoggedIn, authControllers.changeAvatar);
 
 
 export default authRouter;
