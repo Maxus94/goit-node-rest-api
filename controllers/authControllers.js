@@ -112,16 +112,8 @@ const subscribe = async (req, res, next) => {
 
 const changeAvatar = async (req, res, next) => {
 
-  if (!req.user) {
-    throw HttpError(401, "You are not loogged in");
-  }
-
-
   const { _id, email } = req.user;
 
-  if (email !== req.body.email) {
-    throw HttpError(401, `You are not authorized to change avatar for user ${req.body.email}`);
-  }
 
   if (!req.file) {
     throw HttpError(400, "You didn't attach avatar file");
