@@ -25,5 +25,8 @@ authRouter.patch("/", isEmptyBody, authenticate, authControllers.subscribe);
 
 authRouter.patch("/avatars", upload.single("avatar"), authenticate, authControllers.changeAvatar);
 
+authRouter.get("/verify/:verificationToken", authControllers.verify);
+
+authRouter.post("/verify", isEmptyBody, authControllers.resendVerify );
 
 export default authRouter;

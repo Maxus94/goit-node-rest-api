@@ -6,13 +6,17 @@ import ctrlWrapper from "../decorators/ctrlWrapper.js";
 import compareHash from "../helpers/compareHash.js";
 import HttpError from "../helpers/HttpError.js";
 import { createToken } from "../helpers/jwt.js";
-import { authSignupSchema, subscribeSchema } from "../schemas/authSchemas.js";
-
+import { authEmailSchema, authSignupSchema, subscribeSchema } from "../schemas/authSchemas.js";
+import { nanoid } from 'nanoid';
 import * as authServices from "../services/authServices.js";
+import sendEmail from "../helpers/sendEmail.js";
+const { SENDGRID_EMAIL_FROM } = process.env;
 
 const avatarPath = path.resolve("public", "avatars");
 
 const signup = async (req, res, next) => {
+  const verificationToken = nanoid();
+
   const { error } = authSignupSchema.validate(req.body);
   if (error) {
     throw HttpError(400, error.message);
@@ -26,7 +30,18 @@ const signup = async (req, res, next) => {
     }
 
     const avatarURL = gravatar.url(email);
-    const newUser = await authServices.saveUser({ ...req.body, avatarURL, ...{} });
+    const newUser = await authServices.saveUser({ ...req.body, avatarURL, verificationToken, ...{} });
+
+    const verifyEmail = {
+      to: email,
+      from: SENDGRID_EMAIL_FROM,
+      subject: "Verify email",
+      text: 'Verification email',
+      html: `<a target="_blank" href="http://localhost:3000/api/users/verify/${verificationToken}">Click to verify</a>`
+    }
+
+    sendEmail(verifyEmail);
+
     res.status(201).json({
       user: {
         email: newUser.email,
@@ -37,6 +52,40 @@ const signup = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+const verify = async (req, res, next) => {
+  const { verificationToken } = req.params;
+  const user = await authServices.findUser({ verificationToken });
+  if (!user) {
+    throw HttpError(404, "Not found");
+  }
+  await authServices.updateUser({ _id: user._id }, { verify: true, verificationToken: null })
+  res.status(200).json({ message: 'Verification successful' })
+};
+
+const resendVerify = async (req, res, next) => {
+  const { error } = authEmailSchema.validate(req.body);
+  if (error) {
+    throw HttpError(400, error.message);
+  }
+  const { email } = req.body;
+  const user = await authServices.findUser({ email })
+  if (!user) { throw HttpError(404, "Not found") };
+  if (user.verify) {
+    throw HttpError(400, "Verification has already been passed")
+  }
+  const verifyEmail = {
+    to: email,
+    from: SENDGRID_EMAIL_FROM,
+    subject: "Verify email",
+    text: 'Verification email',
+    html: `<a target="_blank" href="http://localhost:3000/api/users/verify/${user.verificationToken}">Click to verify</a>`
+  }
+
+  sendEmail(verifyEmail);
+
+  res.status(200).json({ "message": "Verification email sent" });
 };
 
 const signin = async (req, res, next) => {
@@ -52,6 +101,8 @@ const signin = async (req, res, next) => {
     if (!user) {
       throw HttpError(401, "Email or password is wrong");
     }
+    if (!user.verify) { throw HttpError(401, "Email not verified"); }
+
     const comparePassword = await compareHash(password, user.password);
     if (!comparePassword) {
       throw HttpError(401, "Email or password is wrong");
@@ -89,6 +140,7 @@ const logout = async (req, res) => {
     next(HttpError(401, "Not authorized"));
   }
 };
+
 
 const subscribe = async (req, res, next) => {
   try {
@@ -144,4 +196,6 @@ export default {
   logout: ctrlWrapper(logout),
   subscribe: ctrlWrapper(subscribe),
   changeAvatar: ctrlWrapper(changeAvatar),
+  verify: ctrlWrapper(verify),
+  resendVerify: ctrlWrapper(resendVerify),
 };
