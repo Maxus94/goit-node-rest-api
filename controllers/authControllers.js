@@ -58,7 +58,7 @@ const verify = async (req, res, next) => {
   const { verificationToken } = req.params;
   const user = await authServices.findUser({ verificationToken });
   if (!user) {
-    throw HttpError(404, "Not found");
+    throw HttpError(404, "User not found");
   }
   await authServices.updateUser({ _id: user._id }, { verify: true, verificationToken: null })
   res.status(200).json({ message: 'Verification successful' })
