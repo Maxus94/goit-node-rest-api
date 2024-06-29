@@ -132,7 +132,7 @@ const changeAvatar = async (req, res, next) => {
   const avatarFileName = email.split('@')[0] + '.' + filename.split('.')[1];
   const newPath = path.join(avatarPath, avatarFileName)
   await fs.rename(oldPath, newPath);
-  const avatar = path.join("public", "avatars", avatarFileName);
+  const avatar = path.join("avatars", avatarFileName);
   const result = await authServices.updateUser({ _id }, { avatarURL: avatar });
   res.status(200).json({ avatarURL: result.avatarURL });
 };
